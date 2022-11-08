@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<odoo>
+    <record id="action_report_maintenance_order" model="ir.actions.report">
+        <field name="name">Maintenance Order</field>
+        <field name="model">mro.order</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">mro_maintenance.report_mro_order</field>
+        <field name="report_file">mro_maintenance.report_mro_order</field>
+        <field name="print_report_name">'Maintenance Order - %s' % (object.name)</field>
+        <field name="binding_model_id" ref="model_mro_order"/>
+        <field name="binding_type">report</field>
+    </record>
+    
+    <record id="action_report_maintenance_request" model="ir.actions.report">
+        <field name="name">Maintenance Request</field>
+        <field name="model">mro.request</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">mro_maintenance.report_mro_request</field>
+        <field name="report_file">mro_maintenance.report_mro_request</field>
+        <field name="print_report_name">'Maintenance Request - %s' % (object.name)</field>
+        <field name="binding_model_id" ref="model_mro_request"/>
+        <field name="binding_type">report</field>
+    </record>
+</odoo>

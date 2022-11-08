@@ -1,0 +1,17 @@
+<?xml version="1.0" ?>
+
+<odoo>
+   <record id="hr_employee_form_view" model="ir.ui.view">
+         <field name="name">hr.employee.form</field>
+         <field name="model">hr.employee</field>
+         <field name="inherit_id" ref="hr.view_employee_form"/>
+         <field name="arch" type="xml">
+            <div class="oe_button_box" name="button_box">
+                <button class="oe_inline oe_stat_button" name="action_view_equipment" type="object" 
+                    icon="fa-cogs">
+                    <field string="Equipments" name="mroequi_count" widget="statinfo"/>
+                </button>
+            </div>
+        </field>
+   </record>
+</odoo>

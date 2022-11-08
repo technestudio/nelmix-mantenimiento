@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<odoo>
+    <record id="view_convert_order" model="ir.ui.view">
+        <field name="name">Convert to Task</field>
+        <field name="model">mro.convert.order</field>
+        <field name="arch" type="xml">
+            <form string="Convert to Task" version="7.0">
+                <group>
+                    <group>
+                        <field name="task_name"/>
+                    </group>
+                    <group>
+                    </group>
+                </group>
+                <footer>
+                    <button name="convert_order" string="Convert to Task" type="object" class="oe_highlight"/>
+                    <button string="Cancel" class="oe_link" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_view_convert_order" model="ir.actions.act_window">
+        <field name="name">Convert to Task</field>
+        <field name="res_model">mro.convert.order</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="binding_model_id" ref="mro_maintenance.model_mro_order" />
+        <field name="binding_view_types">form</field>
+    </record>
+</odoo>

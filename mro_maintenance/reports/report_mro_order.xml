@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<odoo>
+    <template id="report_mro_order">
+        <t t-call="web.html_container">
+            <t t-call="web.external_layout">
+                <div class="page">
+                    <t t-foreach="docs" t-as="o">
+                        <h2>Maintenance Order № : <span t-field="o.name"/></h2>
+                        <div class="row mt32 mb32">
+                            <div class="col-4">
+                                <strong>Equipment:</strong><br/>
+                                <span t-field="o.equipment_id.name"/>
+                            </div>
+                            <div class="col-4">
+                                <strong>Maintenance Type:</strong><br/>
+                                <span t-field="o.maintenance_type"/>
+                            </div>
+                            <div class="col-4">
+                                <strong>Source Document:</strong><br/>
+                                <span t-field="o.origin"/>
+                            </div>
+                        </div>
+                        <div class="row mt32 mb32">
+                            <div class="col-4">
+                                <strong>Maintenance Team:</strong><br/>
+                                <span t-field="o.maintenance_team_id.name"/>
+                            </div>
+                            <div class="col-4">
+                                <strong>Responsible:</strong><br/>
+                                <span t-field="o.user_id.name"/>
+                            </div>
+                            <div class="col-4">
+                                <strong>Priority:</strong><br/>
+                                <span t-field="o.maintenance_priority"/>
+                            </div>
+                        </div>
+                        <div class="row mt32 mb32">
+                            <div class="col-6">
+                                <strong>Requested Date:</strong><br/>
+                                <span t-field="o.date_planned" t-options="{'widget': 'date'}"/>
+                            </div>
+                        </div>
+                        <div class="row mt32 mb32">
+                            <div class="col-6">
+                                <strong>Scheduled Period:</strong><br/>
+                                <span t-field="o.date_start_scheduled"/>
+                                <strong> - </strong>
+                                <span t-field="o.date_scheduled"/>
+                            </div>
+                            <div class="col-6" t-if="o.state == 'done'">
+                                <strong>Execution Period:</strong><br/>
+                                <span t-field="o.date_start_execution"/>
+                                <strong> - </strong>
+                                <span t-field="o.date_execution"/>
+                            </div>
+                        </div>
+                        <h3 t-if="o.parts_lines">Spare Parts</h3>
+                        <div class="row">
+                            <div class="col-6" t-if="o.parts_lines">
+                                <strong>Warehouse:</strong><br/>
+                                <span t-field="o.warehouse_id.name"/>
+                            </div>
+                            <div class="col-6" t-if="o.parts_lines">
+                                <strong>Location:</strong><br/>
+                                <span t-field="o.location_parts_id.name"/>
+                            </div>
+                        </div>
+                        <table class="table table-condensed" t-if="o.parts_lines">
+                            <thead>
+                                <tr>
+                                    <th><strong>Product</strong></th>
+                                    <th class="text-right"><strong>Quantity</strong></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-if="o.parts_lines">
+                                    <tr t-foreach="o.parts_lines" t-as="line">
+                                        <td>
+                                            <span t-field="line.parts_id.code"/>
+                                            <span t-field="line.parts_id.name"/>
+                                        </td>
+                                        <td class="text-right">
+                                            <span t-field="line.parts_qty"/>
+                                            <span t-field="line.parts_uom.name"/>
+                                        </td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+                        <h3 t-if="o.tool_ids">Tools</h3>
+                        <table class="table table-condensed" t-if="o.tool_ids">
+                            <thead>
+                                <tr>
+                                    <th><strong>Tool</strong></th>
+                                    <th><strong>Availability</strong></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-if="o.tool_ids">
+                                    <tr t-foreach="o.tool_ids" t-as="tool">
+                                        <td>
+                                            <span t-field="tool.tool_id.name"/>
+                                        </td>
+                                        <td>
+                                            <span t-field="tool.tool_id.order_id.name"/>
+                                        </td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+                        <h3 t-if="o.check_list_id">Operations</h3>
+                        <table class="table table-condensed" t-if="o.check_list_id">
+                            <thead>
+                                <tr>
+                                    <th><strong>Check List</strong></th>
+                                    <th><strong>Activity</strong></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-if="o.check_list_id">
+                                    <tr t-foreach="o.check_list_id.activity_lines" t-as="line">
+                                        <td>
+                                            <span t-field="line.check_list_id.name"/>
+                                        </td>
+                                        <td>
+                                            <span t-field="line.name"/>
+                                        </td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+                        <h3>Cause</h3>
+                        <p t-field="o.cause"/>
+                        <h3 t-if="o.description">Problem Description</h3>
+                        <p t-if="o.description" t-field="o.description"/>
+                    </t>
+                </div>
+            </t>
+        </t>
+    </template>
+</odoo>

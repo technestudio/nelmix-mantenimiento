@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<odoo>
+    <!-- Top menu item -->
+    <menuitem name="MRO Maintenance" id="mro_maintenance.menu_mro_root" groups="mro_maintenance.group_maintenance_user" sequence="80"/>
+
+    <!-- Maintenance menu -->
+    <menuitem name="Operations" id="menu_mro_maintenance" parent="mro_maintenance.menu_mro_root" sequence="10"/>
+
+    <!-- Planning menu -->
+    <menuitem name="Planning" id="menu_mro_planning" parent="mro_maintenance.menu_mro_root" sequence="20"/>
+
+    <!-- Master Data menu -->
+    <menuitem name="Master Data" id="menu_maintenance_master_data" parent="mro_maintenance.menu_mro_root" sequence="30"/>
+
+    <!-- Reporting menu -->
+    <menuitem name="Reporting" id="menu_maintenance_reporting" parent="mro_maintenance.menu_mro_root" sequence="90"/>
+
+    <!-- Configuration menu -->
+    <menuitem name="Configuration" id="menu_maintenance_config" parent="mro_maintenance.menu_mro_root" sequence="100"/>
+</odoo>

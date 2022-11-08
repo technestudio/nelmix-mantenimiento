@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+
+<odoo>
+    <!-- Activity types config -->
+    <record id="mail_activity_type_action_config_mro_maintenance" model="ir.actions.act_window">
+        <field name="name">Activity Types</field>
+        <field name="res_model">mail.activity.type</field>
+        <field name="domain">['|', ('res_model_id', '=', False), ('res_model_id.model', 'in', ['mro.request','mro.order','mro.equipment','mro.gauge','mro.meter','mro.check.list','mro.task','mro.tool','mro.maintenance.team','product.template','product.product'])]</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <menuitem name="Activity Types"
+        id="menu_config_activity_type"
+        action="mail_activity_type_action_config_mro_maintenance"
+        parent="menu_maintenance_config"
+        groups="mro_maintenance.group_maintenance_user"
+        sequence="40"/>
+</odoo>

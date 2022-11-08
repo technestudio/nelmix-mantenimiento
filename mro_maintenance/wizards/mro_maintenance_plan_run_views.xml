@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<odoo>
+    <record id="view_plan_mp_form" model="ir.ui.view">
+        <field name="name">Maintenance Plan Run</field>
+        <field name="model">mro.mp.plan</field>
+        <field name="arch" type="xml">
+            <form string="Maintenance Plan Run">
+                <group>
+                    <group>
+                        <field name="equipment_ids" widget="many2many_tags" options= "{'no_open':True,'no_create':1,'no_create_edit':1}"/>
+                    </group>
+                    <group>
+                        <field name="all_equipments"/>
+                    </group>
+                </group>
+                <footer>
+                    <button name="action_planning_run_mp" string="Plan" type="object"  class="oe_highlight"/>
+                    or
+                    <button string="Cancel" class="oe_link" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_plan_mp" model="ir.actions.act_window">
+        <field name="name">Maintenance Plan Run</field>
+        <field name="res_model">mro.mp.plan</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="binding_model_id" ref="mro_maintenance.model_mro_equipment" />
+        <field name="binding_view_types">list</field>
+    </record>
+
+    <menuitem name="Maintenance Plan"
+        action="action_plan_mp"
+        groups="mro_maintenance.group_maintenance_user"
+        id="menu_mro_plan_mp"
+        parent="mro_maintenance.menu_mro_planning"
+        sequence="30"/>
+
+    <!-- MRO Maintenance Plan Temporary Message -->
+    <record id="view_mp_message_form" model="ir.ui.view">
+        <field name="name">Message Form</field>
+        <field name="model">mro.mp.message</field>
+        <field name="arch" type="xml">
+            <form string="Result">
+                <group>
+                    <field name="name"/>
+                </group>
+                <footer>
+                    <button class="oe_link" string="Close" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>

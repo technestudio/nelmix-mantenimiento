@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<odoo>
+    <!--Meter Views  -->
+    <record id="meter_tree_view" model="ir.ui.view">
+        <field name="name">mro.meter.tree</field>
+        <field name="model">mro.meter</field>
+        <field name="arch" type="xml">
+            <tree string="Meters">
+                <field name="name"/>
+                <field name="meter_uom"/>
+                <field name="measure_type"/>
+                <field name="activity_ids" widget="list_activity"/>
+                <field name="state" widget="badge" decoration-success="state == 'operative'" decoration-warning="state == 'draft'"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="meter_form_view" model="ir.ui.view">
+        <field name="name">mro.meter.form</field>
+        <field name="model">mro.meter</field>
+        <field name="arch" type="xml">
+            <form string="Meters">
+                <header>
+                    <button name="install_meter" states="draft" string="Install Meter" type="object"/>
+                    <button name="detact_meter" states="operative" string="Detach Meter" type="object"/>
+                    <field name="state" widget="statusbar" required="True"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button  class="oe_stat_button" name="attachment_tree_view" type="object" icon="fa-files-o">
+                            <field string="Documents" name="doc_count" widget="statinfo"/>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <label for="name" string="Meter"/>
+                        <h1><field name="name" placeholder="Meter Name" string="Meter"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="meter_uom"/>
+                        </group>
+                        <group>
+                            <field name="measure_type"/>
+                            <field name="actual_utilization"/>
+                            <field name="date" widget="date"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group>
+                            <field name="equipment_id"/>
+                        </group>
+                        <group>
+                            <field name="date_meter_install" widget="date"/>
+                        </group>
+                    </group>
+                    <group string="Meter Technical Notes">
+                        <field name="note" colspan="4" nolabel="1"/>
+                    </group>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids" widget="mail_followers" groups="base.group_user"/>
+                    <field name="activity_ids" widget="mail_activity"/>
+                    <field name="message_ids" widget="mail_thread"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <record id="mro_meter_kanban" model="ir.ui.view">
+        <field name="name">mro.meter.kanban</field>
+        <field name="model">mro.meter</field>
+        <field name="arch" type="xml">
+            <kanban>
+                <field name="id"/>
+                <field name="meter_uom"/>
+                <field name="measure_type"/>
+                <field name="state"/>
+                <field name="equipment_id"/>
+                <field name="date_meter_install"/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div class="oe_kanban_global_click">
+                            <div class="oe_kanban_content">
+                                <div class="o_kanban_record_top">
+                                    <div class="o_kanban_record_headings">
+                                        <strong class="o_kanban_record_title"><field name="name"/></strong><br/>
+                                    </div>
+                                    <span class="float-right text-right"><strong>State: <field name="state"/></strong></span>
+                                </div>
+                                <div class="o_kanban_record_body">
+                                    <div>Measure Type: <field name="measure_type"/></div>
+                                    <div>UoM: <field name="meter_uom"/></div>
+                                </div>
+                                <div class="o_kanban_record_bottom">
+                                    <div class="oe_kanban_bottom_left">
+                                        <field name="equipment_id"/>
+                                    </div>
+                                    <div class="oe_kanban_bottom_right">
+                                        <field name="date_meter_install" widget="date"/>
+                                    </div>
+                                </div>
+                                <div class="oe_clear"/>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <record id="mro_meter_activity" model="ir.ui.view">
+        <field name="name">mro.meter.activity</field>
+        <field name="model">mro.meter</field>
+        <field name="arch" type="xml">
+            <activity string="Meters">
+                <templates>
+                    <div t-name="activity-box">
+                        <div>
+                            <field name="name" display="full"/>
+                        </div>
+                    </div>
+                </templates>
+            </activity>
+        </field>
+    </record>
+
+    <record model="ir.ui.view" id="mro_meter_search">
+        <field name="name">mro.meter.search</field>
+        <field name="model">mro.meter</field>
+        <field name="arch" type="xml">
+            <search string="Meter Search">
+                <field name="name"/>
+                <filter string="Setup" name="setup" domain="[('state','=','draft')]"/>
+                <filter string="Operative" name="operative" domain="[('state','=','operative')]"/>
+                <group expand="0" string="Group By">
+                    <filter name="group_state" string="State" context="{'group_by': 'state'}"/>
+                    <filter name="group_measure_type" string="Measure Type" context="{'group_by': 'measure_type'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_meter" model="ir.actions.act_window">
+        <field name="name">Meters</field>
+        <field name="res_model">mro.meter</field>
+        <field name="view_mode">kanban,form,tree,activity</field>
+    </record>
+
+    <menuitem name="Meters"
+        action="action_meter"
+        id="menu_meter"
+        groups="mro_maintenance.group_maintenance_user"
+        parent="menu_maintenance_master_data"
+        sequence="80"/>
+
+    <!-- Meter Measure Views  -->
+    <record id="mro_meter_line_tree_view" model="ir.ui.view">
+        <field name="name">mro.meter.line.tree</field>
+        <field name="model">mro.meter.line</field>
+        <field name="arch" type="xml">
+            <tree string="Meter Measure" editable='top'>
+                <field name="meter_id"/>
+                <field name="date" widget="date"/>
+                <field name="value"/>
+                <field name="meter_uom"/>
+                <field name="planning_run_result"/>
+            </tree>
+        </field>
+    </record>
+
+    <record model="ir.ui.view" id="mro_meter_line_search">
+        <field name="name">mro.meter.line.search</field>
+        <field name="model">mro.meter.line</field>
+        <field name="arch" type="xml">
+            <search string="Meter Measure Search">
+                <field name="date"/>
+                <field name="meter_id"/>
+                <filter string="Date" name="date" date="date"/>
+                <separator/>
+                <group expand="0" string="Group By">
+                    <filter name="group_meter" string="Meter" context="{'group_by': 'meter_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_meter_line" model="ir.actions.act_window">
+        <field name="name">Meter Measures</field>
+        <field name="res_model">mro.meter.line</field>
+        <field name="view_mode">tree</field>
+        <field name="context">{}</field>
+    </record>
+
+    <menuitem name="Meter Measures"
+        action="action_meter_line"
+        id="menu_meter_line"
+        groups="mro_maintenance.group_maintenance_user"
+        parent="mro_maintenance.menu_mro_maintenance"
+        sequence="50"/>
+</odoo>

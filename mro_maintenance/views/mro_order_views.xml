@@ -1,0 +1,481 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<odoo>
+    <!-- Record Actual Duration Views  -->
+    <record id="action_mro_order_record" model="ir.actions.act_window">
+        <field name="name">Closing</field>
+        <field name="res_model">mro.order.duration.record</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="binding_model_id" ref="mro_maintenance.model_mro_order" />
+        <field name="binding_view_types">list</field>
+    </record>
+
+    <record id="mro_order_record_form" model="ir.ui.view">
+        <field name="name">mro.order.record</field>
+        <field name="model">mro.order.duration.record</field>
+        <field name="arch" type="xml">
+            <form>
+                <group string="Maintenance Order Closing">
+                    <field name="actual_duration" widget="float_time"/>
+                    <field name="order_id"/>
+                </group>
+                <footer>
+                    <button name="do_record" type="object" string="Close" class="oe_highlight"/>
+                    <button string="Cancel" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- Maintenance Order Views -->
+    <record id="mro_order_tree_view" model="ir.ui.view">
+        <field name="name">mro.order.tree</field>
+        <field name="model">mro.order</field>
+        <field name="arch" type="xml">
+            <tree string="Maintenance Orders">
+                <field name="maintenance_priority"/>
+                <field name="name" decoration-bf="1"/>
+                <field name="equipment_id"/>
+                <field name="maintenance_type"/>
+                <field name="maintenance_team_id"/>
+                <field name="user_id" optional="show" widget="many2one_avatar_user"/>
+                <field name="activity_ids" widget="list_activity"/>
+                <field name="date_start_scheduled" optional="show"
+                    decoration-danger="state == 'draft' and date_start_scheduled &lt; now"
+                    decoration-bf="state == 'draft' and date_start_scheduled &lt; now"/>
+                <field name="date_scheduled" optional="show"
+                    decoration-danger="state in ('released', 'ready') and date_scheduled &lt; now"
+                    decoration-bf="state in ('released', 'ready') and date_scheduled &lt; now"/>
+                <field name="date_planned" optional="show"/>
+                <field name="request_id" optional="show"/>
+                <field name="origin" optional="show"/>
+                <field name="warehouse_id" optional="hide"/>
+                <field name="date_start_execution" optional="hide"/>
+                <field name="date_execution" optional="hide"/>
+                <field name="state" widget="badge"
+                    decoration-success="state == 'done'"
+                    decoration-info="state == 'draft'"
+                    decoration-warning="state == 'released'"
+                    decoration-danger="state == 'cancel'"/>
+            </tree>
+        </field>
+    </record>
+    
+    <record id="mro_order_calendar_view" model="ir.ui.view">
+        <field name="name">mro.order.calendar</field>
+        <field name="model">mro.order</field>
+        <field name="arch" type="xml">
+            <calendar color="state" date_start="date_start_scheduled" date_delay="order_duration" string="Maintenance Orders" mode="month" hide_time="true" quick_add="False">
+                <field name="name"/>
+                <field name="equipment_id"/>
+                <field name="state" filters="1"/>
+            </calendar>
+        </field>
+    </record>
+    
+    <record id="mro_order_form_view" model="ir.ui.view">
+        <field name="name">mro.order.form</field>
+        <field name="model">mro.order</field>
+        <field name="arch" type="xml">
+            <form string="Maintenance Orders">
+                <header>
+                    <button name="action_confirm" states="draft" string="Confirm Maintenance" type="object" class="oe_highlight" groups="mro_maintenance.group_maintenance_administrator"/>
+                    <button name="%(action_request_reject_order)d" states="draft" string="Reject Order" type="action" groups="mro_maintenance.group_maintenance_administrator"/>
+                    <button name="action_done_before" type="object" string="Close" states="ready" class="oe_highlight"/>
+                    <button name="check_availability" states="released" string="Check Availability" type="object"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,ready,done" statusbar_colors='{"parts_except":"red","released":"blue"}'/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <widget name="web_ribbon" title="Archived" bg_color="bg-danger" attrs="{'invisible': [('active', '=', True)]}"/>
+                        <button  class="oe_stat_button" name="attachment_tree_view" type="object" icon="fa-files-o">
+                            <field string="Documents" name="doc_count" widget="statinfo"/>
+                        </button>
+                        <button  class="oe_stat_button" name="task_attachment_tree_view" type="object" icon="fa-files-o" attrs="{'invisible':[('task_id','=', False)]}">
+                            <field string="Instructions" name="doc_count_task" widget="statinfo"/>
+                        </button>
+                        <button  class="oe_stat_button" name="request_attachment_tree_view" type="object" icon="fa-files-o" attrs="{'invisible':[('request_id','=', False)]}">
+                            <field string="Request Documents" name="doc_count_req" widget="statinfo"/>
+                        </button>
+                        <button name="action_view_delivery" type="object" class="oe_stat_button" icon="fa-truck" attrs="{'invisible': [('delivery_count', '=', 0)]}">
+                            <field name="delivery_count" widget="statinfo" string="Pickings"/>
+                        </button>
+                        <button name="%(action_mro_maintenance_analytic_lines)d" type="action" string="Analytic Lines" class="oe_stat_button" icon="fa-list" attrs="{'invisible': [('state', 'not in', ('done'))]}" groups="analytic.group_analytic_accounting"/>
+                    </div>
+                    <div class="oe_title">
+                        <label for="name" string="Maintenance Order"/>
+                        <h1>
+                            <field name="name" placeholder="Maintenance Order Reference" nolabel="1" readonly="1"/>
+                        </h1>
+                    </div>
+                    <group col='3'>
+                        <group>
+                            <field name="equipment_id"/>
+                            <field name="category_id" invisible="1"/>
+                            <field name="maintenance_type" attrs="{'readonly':[('nochange','!=', False)]}"/>
+                            <field name="task_id" domain="[('category_id', '=', category_id)]"/>
+                            <field name="company_id" invisible="1"/>
+                            <field name="nochange" invisible="1"/>
+                            <field name="active" invisible="1"/>
+                        </group>
+                        <group>
+                            <field name="date_document" widget="date"/>
+                            <field name="origin"/>
+                            <field name="request_id" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="maintenance_team_id"/>
+                            <field name="user_id"/>
+                            <field name="n_resourse"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group>
+                        </group>
+                        <group>
+                            <field name="maintenance_priority"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Dates">
+                            <group>
+                                <group string='Planned Dates'>
+                                <field name="date_planned" widget = "date" attrs="{'readonly':[('nochange','!=', False)]}"/>
+                                    <label for="date_start_scheduled" string="Planned Period"/>
+                                        <div>
+                                            <field name="date_start_scheduled" class="oe_inline"
+                                                decoration-danger="state == 'draft' and date_start_scheduled &lt; now"
+                                                decoration-bf="state == 'draft' and date_start_scheduled &lt; now"/> - 
+                                            <field name="date_scheduled" class="oe_inline" nolabel="1"
+                                                decoration-danger="state in ('released', 'ready') and date_scheduled &lt; now"
+                                                decoration-bf="state in ('released', 'ready') and date_scheduled &lt; now"/>
+                                        </div>
+                                    <label for="order_duration" string="Planned Duration"/>
+                                        <div>
+                                            <field name="order_duration" class="oe_inline" widget="float_time"/>
+                                            hours
+                                        </div>
+                                </group>
+                                <group string='Actual Dates'>
+                                    <label for="date_start_execution" string="Actual Period"/>
+                                    <div>
+                                        <field name="date_start_execution" class="oe_inline"/> - 
+                                        <field name="date_execution" class="oe_inline" nolabel="1"/>
+                                    </div>
+                                    <label for="actual_duration"/>
+                                    <div>
+                                        <field name="actual_duration" class="oe_inline" widget="float_time"/>
+                                        hours
+                                    </div>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="Parts">
+                            <group string='Warehouse Data'>
+                                <group>
+                                    <field name="warehouse_id" groups="stock.group_stock_multi_warehouses" options="{'no_open': True, 'no_create': True}"/>
+                                    <field name="location_parts_id" groups="stock.group_stock_multi_locations" options="{'no_open': True, 'no_create': True}"/>
+                                </group>
+                                <group>
+                                    <field name="picking_type_id"/>
+                                </group>
+                            </group>
+                            <group string="Planned Parts" states="draft,released,done,ready,cancel">
+                                <field name="parts_lines" nolabel="1">
+                                    <tree string="Planned Parts" editable="bottom" decoration-success="parts_type in ('consu','service')">
+                                        <field name="parts_id" string="Spare Part"/>
+                                        <field name="parts_qty"/>
+                                        <field name="parts_uom" groups="uom.group_uom"/>
+                                        <field name="parts_type"/>
+                                        <field name="parts_categ_id"/>
+                                    </tree>
+                                </field>
+                            </group>
+                            <group string="Stock Moves" states="released,ready,done">
+                                <field name="parts_stock_moves" nolabel="1" readonly="1">
+                                    <tree string="Stock Moves">
+                                        <field name="picking_id"/>
+                                        <field name="product_id" string="Spare Part"/>
+                                        <field name="product_qty"/>
+                                        <field name="show_reserved_availability" invisible="1"/>
+                                        <field name="reserved_availability" invisible="1"/>
+                                        <field name="forecast_expected_date" invisible="1"/>
+                                        <field name="forecast_availability" string="Availability" attrs="{'column_invisible': [('parent.state', 'in', ['draft', 'done'])]}" widget="forecast_widget"/>
+                                        <field name="is_quantity_done_editable" invisible="1"/>
+                                        <field name="quantity_done" string="Consumed" attrs="{'column_invisible': [('parent.state', '=', 'draft')], 'readonly': [('show_details_visible', '=', True)]}"/>
+                                        <field name="product_uom" groups="uom.group_uom"/>
+                                        <field name="state" widget="badge" 
+                                            decoration-success="state == 'done'" 
+                                            decoration-warning="state == 'draft'"
+                                            decoration-info="state == 'assigned'"
+                                            decoration-danger="state == 'waiting' or state == 'confirmed' or state == 'partially_available'"/>
+                                        <field name="show_details_visible" invisible="1"/>
+                                    </tree>
+                                </field>
+                            </group>
+                        </page>
+                        <page string="Tools">
+                            <field name="tool_ids">
+                                <tree editable="bottom">
+                                    <field name="tool_id"/>
+                                    <field name="order_id"/>
+                                    <field name="date_next_calibration" widget="remaining_days"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page string="Operations">
+                            <group string="Check List">
+                                <group>
+                                    <field name="check_list_id" widget="selection"/>
+                                    <field name="checklist_progress" widget="percentpie" string=""/>
+                                </group>
+                                <group>
+                                    <field name="activity" widget="many2many_checkboxes"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="Costing">
+                            <group name='Product Costing'>
+                                <group string='Standard Costs'>
+                                    <field name="std_mat_cost" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                                    <field name="std_tool_cost" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                                    <field name="std_labour_cost" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                                    <field name="currency_id" invisible="1"/>
+                                </group>
+                                <group string='Actual Costs'>
+                                    <field name="act_mat_cost" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                                    <field name="act_tool_cost" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                                    <field name="act_labour_cost" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                                </group>
+                            </group>
+                        </page>
+                    </notebook>
+                    <group string="Reject Reason" states="cancel">
+                        <field name="reject_reason" colspan="4" nolabel="1"/>
+                    </group>
+                    <group string="Description">
+                        <field name="description" colspan="4" nolabel="1"/>
+                    </group>
+                    <group string="Cause">
+                        <field name="cause" colspan="4" nolabel="1"/>
+                    </group>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids" widget="mail_followers" groups="base.group_user"/>
+                    <field name="activity_ids" widget="mail_activity"/>
+                    <field name="message_ids" widget="mail_thread"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <record id="mro_order_kanban_view" model="ir.ui.view">
+        <field name="name">mro.order.kanban</field>
+        <field name="model">mro.order</field>
+        <field name="arch" type="xml">
+            <kanban default_order="date_planned">
+                <field name="state"/>
+                <field name="name"/>
+                <field name="date_planned"/>
+                <field name="equipment_id"/>
+                <field name="maintenance_type"/>
+                <field name="maintenance_team_id"/>
+                <field name="maintenance_priority"/>
+                <field name="user_id"/>
+                <field name="message_needaction_counter"/>
+                <field name="activity_ids"/>
+                <field name="activity_state"/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div class="oe_kanban_global_click">
+                            <div class="oe_kanban_content">
+                                <div class="o_kanban_record_top">
+                                    <div class="o_kanban_record_headings">
+                                        <strong class="o_kanban_record_title"><field name="name"/></strong><br/>
+                                        <small class="o_kanban_record_subtitle">
+                                            <t t-if="record.date_planned.raw_value and record.date_planned.raw_value lt (new Date())" t-set="red">oe_kanban_text_red</t>
+                                            <span t-attf-class="#{red || ''}"><i><field name="date_planned" widget="date"/></i></span>
+                                            <span class="float-right text-right">Maintenance Type: <t t-if="record.maintenance_type.raw_value"><field name="maintenance_type"/></t></span>
+                                        </small>
+                                    </div>
+                                    <span class="float-right text-right"><strong><field name="state"/></strong></span>
+                                </div>
+                                <div class="o_kanban_record_body">
+                                    <div>
+                                        <field name="equipment_id"/>
+                                    </div>
+                                    <div>
+                                        <field name="maintenance_team_id"/>
+                                    </div>
+                                </div>   
+                                <div class="o_kanban_record_bottom">
+                                    <div class="oe_kanban_bottom_left">
+                                        <field name="maintenance_priority" widget="priority"/>
+                                        <field name="activity_ids" widget="kanban_activity"/>
+                                        <t t-if="record.message_needaction_counter.raw_value">
+                                            <span role="alert" class="oe_kanban_mail_new" title="Unread Messages"><i class="fa fa-comments" role="img" aria-label="Unread Messages"/><t t-raw="record.message_needaction_counter.raw_value"/></span>
+                                        </t>
+                                    </div>
+                                    <div class="oe_kanban_bottom_right">
+                                        <img t-att-src="kanban_image('res.users','image_small',record.user_id.raw_value)" t-att-title="record.user_id.value" t-att-alt="record.user_id.value" width="24" height="24" class="oe_kanban_avatar"/>
+                                    </div>
+                                </div>
+                                <div class="oe_clear"/>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <record id="mro_order_search" model="ir.ui.view">
+        <field name="name">mro.order.search</field>
+        <field name="model">mro.order</field>
+        <field name="arch" type="xml">
+            <search string="Search Maintenance Order">
+                <field name="name"/>
+                <field name="maintenance_type"/>
+                <field name="equipment_id"/>
+                <filter string="Draft" name="draft" domain="[('state','=','draft')]"/>
+                <filter string="Released" name="released" domain="[('state','=','released')]"/>
+                <filter string="Ready" name="ready" domain="[('state','=','ready')]"/>
+                <filter string="Open" name="open" domain="[('state','in',('draft','released','ready'))]"/>
+                <filter string="Closed" name="done" domain="[('state','=','done')]"/>
+                <filter string="Document Date" name="date_document" date="date_document"/>
+                <separator/>
+                <filter string="Archived" name="inactive" domain="[('active','=',False)]"/>
+                <separator/>
+                <filter string="Late" name="late" domain="['&amp;', ('date_start_scheduled','&lt;', current_date), ('state', 'in', ('ready','draft','released'))]"/>
+                <separator/>
+                <filter string="Late Activities" name="activities_overdue" domain="[('activity_ids.date_deadline', '&lt;', context_today().strftime('%Y-%m-%d'))]"/>
+                <filter string="Today Activities" name="activities_today" domain="[('activity_ids.date_deadline', '=', context_today().strftime('%Y-%m-%d'))]"/>
+                <filter string="Future Activities" name="activities_upcoming_all" domain="[('activity_ids.date_deadline', '&gt;', context_today().strftime('%Y-%m-%d'))]"/>
+                <separator/>
+                <group expand="0" string="Group By">
+                    <filter name="group_state" string="State" context="{'group_by': 'state'}"/>
+                    <filter name="group_type" string="Maintenance Type" context="{'group_by': 'maintenance_type'}"/>
+                    <filter name="group_team" string="Team" context="{'group_by': 'maintenance_team_id'}"/>
+                    <filter name="group_equipment" string="Equipment" context="{'group_by': 'equipment_id'}" />
+                    <filter name="group_date_scheduled" string="Scheduled Date" context="{'group_by': 'date_scheduled'}"/>
+                    <filter name="group_date_execution" string="Execution Date" context="{'group_by': 'date_execution'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_mro_orders" model="ir.actions.act_window">
+        <field name="name">Maintenance Orders</field>
+        <field name="res_model">mro.order</field>
+        <field name="view_mode">tree,form,kanban,calendar,activity</field>
+        <field name="domain">[]</field>
+        <field name="context">{'search_default_open': True}</field>
+    </record>
+    
+    <record model="ir.actions.act_window.view" id="action_mro_order_tree_view">
+        <field name="sequence" eval="1"/>
+        <field name="view_mode">tree</field>
+        <field name="view_id" ref="mro_order_tree_view"/>
+        <field name="act_window_id" ref="action_mro_orders"/>
+    </record>
+
+    <menuitem name="Maintenance Orders"
+        action="action_mro_orders"
+        groups="mro_maintenance.group_maintenance_user"
+        id="menu_mro_order"
+        parent="mro_maintenance.menu_mro_maintenance"
+        sequence="30"/>
+        
+    <record id="mro_order_cost_report_tree_view" model="ir.ui.view">
+        <field name="name">mro.order.cost.report.tree</field>
+        <field name="model">mro.order</field>
+        <field name="arch" type="xml">
+            <tree string="Maintenance Order Cost Report" create="0">
+                <field name="name"/>
+                <field name="equipment_id"/>
+                <field name="maintenance_type"/>
+                <field name="maintenance_team_id"/>
+                <field name="actual_duration" string='Actual Duration (h)'/>
+                <field name="act_mat_cost" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                <field name="act_tool_cost" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                <field name="act_labour_cost" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                <field name="delta_duration" string='Delta Duration (h)'/>
+                <field name="delta_mat_cost" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                <field name="act_mat_cost_unplanned" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                <field name="delta_tool_cost" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                <field name="delta_labour_cost" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                <field name="currency_id" invisible='1'/>
+                <field name="state"/>
+            </tree>
+        </field>
+    </record>
+    
+    <record id="mro_order_cost_report_pivot_view" model="ir.ui.view">
+        <field name="name">mro.order.cost.report.pivot</field>
+        <field name="model">mro.order</field>
+        <field name="arch" type="xml">
+            <pivot string="Equipment Cost Report">
+                <field name="date_document" interval="month" type="col"/>
+                <field name="maintenance_team_id" type="row"/>
+                <field name="maintenance_type" type="row"/>
+                <field name="delta_duration" type="measure"/>
+                <field name="delta_mat_cost" type="measure"/>
+                <field name="delta_tool_cost" type="measure"/>
+                <field name="delta_labour_cost" type="measure"/>
+                <field name="act_mat_cost_unplanned" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+    
+    <record id="mro_order_cost_report_graph_view" model="ir.ui.view">
+        <field name="name">mro.order.cost.report.graph</field>
+        <field name="model">mro.order</field>
+        <field name="arch" type="xml">
+            <graph string="Equipment Cost Report" type="bar">
+                <field name="maintenance_team_id" type="row"/>
+                <field name="maintenance_type" type="row"/>
+                <field name="delta_duration" type="measure"/>
+                <field name="delta_mat_cost" type="measure"/>
+                <field name="delta_tool_cost" type="measure"/>
+                <field name="delta_labour_cost" type="measure"/>
+                <field name="act_mat_cost_unplanned" type="measure"/>
+            </graph>
+        </field>
+    </record>
+    
+    <record id="action_mro_order_cost_report" model="ir.actions.act_window">
+        <field name="name">Maintenance Order Cost Report</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">mro.order</field>
+        <field name="view_mode">tree,pivot,graph</field>
+    </record>
+    
+    <record model="ir.actions.act_window.view" id="action_mro_order_cost_report_tree_view">
+        <field name="sequence" eval="1"/>
+        <field name="view_mode">tree</field>
+        <field name="view_id" ref="mro_order_cost_report_tree_view"/>
+        <field name="act_window_id" ref="action_mro_order_cost_report"/>
+    </record>
+    
+    <record model="ir.actions.act_window.view" id="action_mro_order_cost_report_pivot_view">
+        <field name="sequence" eval="2"/>
+        <field name="view_mode">pivot</field>
+        <field name="view_id" ref="mro_order_cost_report_pivot_view"/>
+        <field name="act_window_id" ref="action_mro_order_cost_report"/>
+    </record>
+    
+    <record model="ir.actions.act_window.view" id="action_mro_order_cost_report_graph_view">
+        <field name="sequence" eval="3"/>
+        <field name="view_mode">graph</field>
+        <field name="view_id" ref="mro_order_cost_report_graph_view"/>
+        <field name="act_window_id" ref="action_mro_order_cost_report"/>
+    </record>
+    
+    <menuitem name="Maintenance Order Cost Report"
+        action="action_mro_order_cost_report"
+        groups="mro_maintenance.group_maintenance_user"
+        id="menu_maintenance_mro_order_cost_report"
+        parent="menu_maintenance_reporting"
+        sequence="30"/>
+</odoo>

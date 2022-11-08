@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<odoo>
+    <record id="Equipment_category_tree_view" model="ir.ui.view">
+        <field name="name">mro.equipment.category.tree</field>
+        <field name="model">mro.equipment.category</field>
+        <field name="arch" type="xml">
+            <tree string="Equipment Categories">
+                <field name="categ_no"/>
+                <field name="name"/>
+                <field name="mroequi_count"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="Equipment_Category_form" model="ir.ui.view">
+        <field name="name">mro.equipment.category.form</field>
+        <field name="model">mro.equipment.category</field>
+        <field name="arch" type="xml">
+            <form string="Equipment Category">
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <widget name="web_ribbon" text="Archived" bg_color="bg-danger" attrs="{'invisible': [('active', '=', True)]}"/>
+                        <button class="oe_inline oe_stat_button" name="action_view_equipment" type="object" icon="fa-cogs">
+                            <field string="Equipments" name="mroequi_count" widget="statinfo"/>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <field name="active" invisible="1"/>
+                        <label for="name" string="Category Name"/>
+                        <h1><field name="name"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="categ_no"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="note"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="Equipment_category_category_search" model="ir.ui.view">
+        <field name="name">mro.equipment.category.search</field>
+        <field name="model">mro.equipment.category</field>
+        <field name="arch" type="xml">
+            <search string="Equipment Category">
+                <field name="name" string="Equipment Category"/>
+                <filter string="Archived" name="inactive" domain="[('active','=',False)]"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_equipment_category" model="ir.actions.act_window">
+        <field name="name">Equipment Category</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">mro.equipment.category</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <menuitem name="Equipment Category"
+        action="action_equipment_category"
+        groups="mro_maintenance.group_maintenance_user"
+        id="menu_equipment_category"
+        parent="menu_maintenance_config"
+        sequence="10"/>
+</odoo>

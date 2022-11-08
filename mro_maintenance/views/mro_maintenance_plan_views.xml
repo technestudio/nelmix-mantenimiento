@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<odoo>
+    <!-- Maintenance Plan Views  -->
+    <record id="mro_maintenance_plan_tree_view" model="ir.ui.view">
+        <field name="name">mro.maintenance.plan.tree</field>
+        <field name="model">mro.maintenance.plan</field>
+        <field name="arch" type="xml">
+            <tree string="Maintenance Plan" editable="top">
+                <field name="plan_meter_id" invisible="1"/>
+                <field name="date_planned" widget="date"/>
+                <field name="planned_utilization"/>
+                <field name="plan_meter_uom"/>
+                <field name="plan_task_id" domain="[('category_id', '=', category_id)]"/>
+                <field name="state"/>
+                <field name="planning_run_result"/>
+                <field name="order_id" domain="[('maintenance_type', '=', 'mp')]"/>
+                <button name="action_close" type="object" string="Close" attrs="{'invisible': [('state', '!=', 'draft')]}" class="oe_highlight"/>
+                <button name="action_reset" type="object" string="Reset" attrs="{'invisible': [('state', '!=', 'done')]}"/>
+                <field name="equipment_id" invisible="1"/>
+                <field name="category_id" invisible="1"/>
+                <field name="maintenance_type" invisible="1"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="mro_maintenance_plan_search" model="ir.ui.view">
+        <field name="name">mro.maintenance.plan.search</field>
+        <field name="model">mro.maintenance.plan</field>
+        <field name="arch" type="xml">
+            <search string="Maintenance Plan Search">
+                <field name="date_planned"/>
+                <field name="plan_meter_id"/>
+                <filter string="Planned Date" name="date_planned" date="date_planned"/>
+                <separator/>
+                <group expand="0" string="Group By">
+                    <filter name="group_meter" string="Meter" context="{'group_by': 'plan_meter_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+</odoo>

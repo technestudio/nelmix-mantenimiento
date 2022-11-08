@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<odoo>
+    <record id="tool_utilization_analysis_tree_view" model="ir.ui.view">
+        <field name="name">mro.order.tool.utilization.tree</field>
+        <field name="model">mro.order.tool.utilization</field>
+        <field name="arch" type="xml">
+            <tree string="Tool Utilization Analysis" create="0" edit="0">
+                <field name="tool_id"/>
+                <field name="maintenance_id"/>
+                <field name="maintenance_type"/>
+                <field name="equipment_id"/>
+                <field name="order_duration" widget="float_time" sum="Planned Duration"/>
+                <field name="actual_duration" widget="float_time" sum="Actual Duration"/>
+                <field name="maintenance_team_id"/>
+                <field name="user_id"/>
+                <field name="date_start_execution"/>
+                <field name="date_execution"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="tool_utilization_analysis_pivot_view" model="ir.ui.view">
+        <field name="name">mro.order.tool.utilization.pivot</field>
+        <field name="model">mro.order.tool.utilization</field>
+        <field name="arch" type="xml">
+            <pivot string="Tool Utilization Analysis">
+                <field name="date_execution" interval="month" type="col"/>
+                <field name="tool_id" type="row"/>
+                <field name="maintenance_type" type="row"/>
+                <field name="order_duration" type="measure"/>
+                <field name="actual_duration" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="tool_utilization_analysis_search_view" model="ir.ui.view">
+        <field name="name">mro.order.tool.utilization.search</field>
+        <field name="model">mro.order.tool.utilization</field>
+        <field name="arch" type="xml">
+            <search string="Tool Utilization Analysis">
+                <field name="tool_id"/>
+                <filter string="Execution Start Date" name="date_start_execution" date="date_start_execution"/>
+                <separator/>
+                <group expand="0" string="Group By">
+                    <filter name="group_type" string="Maintenance Type" context="{'group_by': 'maintenance_type'}"/>
+                    <filter name="group_team" string="Team" context="{'group_by': 'maintenance_team_id'}"/>
+                    <filter name="group_equipment" string="Equipment" context="{'group_by': 'equipment_id'}" />
+                    <filter name="group_date_start_execution" string="Scheduled Start Date" context="{'group_by': 'date_start_execution'}"/>
+                    <filter name="group_date_execution" string="Scheduled End Date" context="{'group_by': 'date_execution'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="view_tool_utilization_analysis" model="ir.ui.view">
+        <field name="name">tool.utilization.form</field>
+        <field name="model">tool.utilization</field>
+        <field name="arch" type="xml">
+            <form>
+                <group>
+                    <group>
+                        <field name="tool_id"/>
+                    </group>
+                </group>
+                <footer>
+                    <button name="get_tool_utilization" string="Tool Utilization Analysis" type="object" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel" />
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_tool_utilization_analysis" model="ir.actions.act_window">
+        <field name="name">Tool Utilization Analysis</field>
+        <field name="res_model">tool.utilization</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="view_tool_utilization_analysis"/>
+        <field name="target">new</field>
+        <field name="context">{}</field>
+    </record>
+
+    <menuitem id="menu_tool_utilization_analysis"
+        name="Tool Utilization Analysis"
+        parent="menu_maintenance_reporting"
+        sequence="40"
+        action="action_tool_utilization_analysis"/>
+</odoo>
+
